@@ -1,7 +1,7 @@
 # Compare the G25 coordinates of a single individual
 # to a list of ancient samples.
 
-using G25Tools
+using CSV, G25Tools
 
 # Insert your own G25 here. They can be obtained from
 # https://g25requests.app/
