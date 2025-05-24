@@ -3,8 +3,8 @@
 G25 Tools is a library for the Julia programming language
 to work with G25 coordinates.
 
-G25 coordinates were introduced by the blogger [Davidski]
-(https://eurogenes.blogspot.com/2019/07/getting-most-out-of-global25_12.html)
+G25 coordinates were introduced by the blogger
+[Davidski](https://eurogenes.blogspot.com/2019/07/getting-most-out-of-global25_12.html)
 to compare genetic samples and populations. They have become
 increasingly popular in recent years and are also used by
 several companies.
