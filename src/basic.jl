@@ -274,7 +274,6 @@ function average(samples::DataFrame; name = "Average")
     if isempty(samples)
         return nothing
     end
-
     result = []
     push!(result, name)
     for col in 2:26
@@ -283,6 +282,28 @@ function average(samples::DataFrame; name = "Average")
     return result
 end
 
+"""
+    median(samples::DataFrame; name = "Median")
+
+Calculate the mean average of a DataFrame of samples in G25 format.
+
+Return the median average as a vector of G25 coordinates where the first
+entry is the given name, usually the name of the given population.
+
+This method may be better suited than the mean aveerage for small
+sample sizes that include outliers.
+"""
+function medianavg(samples::DataFrame; name = "Median")
+    if isempty(samples)
+        return nothing
+    end
+    result = []
+    push!(result, name)
+    for col in 2:26
+        push!(result, median(samples[!, col]))
+    end
+    return result
+end
 
 
 

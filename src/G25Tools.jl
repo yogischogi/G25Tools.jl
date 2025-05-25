@@ -2,8 +2,8 @@ module G25Tools
 
 using CairoMakie, CSV, DataFrames, LinearAlgebra, Statistics
 
-export readG25, extractG25
-export average, Distances, distance, distances, getyear, pick
+export readG25, extractG25, writedistances
+export average, Distances, distance, distances, getyear, medianavg, pick
 export plotpca, Population
 
 include("basic.jl")
