@@ -1,16 +1,4 @@
 """
-    Distances
-
-    Holds the distances from multiple source samples to a single
-    target sample. Each source sample consists of a name and it's
-    G25 distance to the target sample.
-"""
-struct Distances
-    targetname::String
-    sourcesamples::DataFrame
-end
-
-"""
     extractG25(from::AbstractDataFrame)
 
 Extract G25 data from a DataFrame that is in the form
@@ -209,6 +197,22 @@ function distance(source::Vector, target::Vector)
 end
 
 """
+    distance(source::DataFrameRow, target::DataFrameRow)
+
+Return the vector distance between two samples with G25 coordinates.
+Both source and target must be in the form:
+["Name", PC1,...PC25]
+where Name is a String and PC1 to PC25 are the G25 coordinates
+of the sample. Additional fields are allowed because only [2:26] are
+used to calculate the distance.
+"""
+function distance(source::DataFrameRow, target::DataFrameRow)
+    s = collect(source[1:26])
+    t = collect(target[1:26])
+    return distance(s, t)
+end
+
+"""
     distances(source::DataFrame, target::Vector)
 
 Calculate the distances between samples in a DataFrame and
@@ -305,5 +309,121 @@ function medianavg(samples::DataFrame; name = "Median")
     return result
 end
 
+"""
+    clusters(samples::DataFrame; distance = 0.1, neighbors = 1)
+
+Find clusters in a set of samples that satisfy the given conditions.
+Within each cluster the nearest neighbor of a sample must be within
+distance and each sample must have a minumum number of neighbors that
+is given by neighbors.
+
+Return an array of Populations where each Population represents one cluster.
+If no cluster could be found an empty array is returned.
+
+XXX Currently each sample may appear in only one cluster, which
+can lead to strange results. Also samples at the fringe of a cluster
+are sometimes cut off if they do not have enough neighbors.
+Performance is rather poor for large sample sizes. About 6 seconds
+for 500 samples on my rather old computer.
+24 seconds for 600 samples.
+"""
+function clusters(samples::DataFrame; distance = 0.05, neighbors = 1)
+    result = Population[]
+    n = nrow(samples)
+    if n == 0 
+        return result
+    end
+
+    # Calculate distances between all samples.
+    dists = zeros(n, n)
+    for col = 1:n
+        for row = col+1:n
+            dists[col, row] = G25Tools.distance(samples[col, :], samples[row, :])
+            dists[row, col] = dists[col, row]
+        end
+    end
+
+    # Get indices of all samples that are within a cluster.
+    idxs = _select(dists, distance, neighbors)
+
+    # Calculate clusters, each element may appear in only one cluster.
+    while length(idxs) > 1
+        cluster = Integer[]
+        push!(cluster, idxs[1])
+        push!(cluster, _cluster(idxs[1], idxs[2:end], dists, distance)...)
+        if length(cluster) > 0
+            # Add the cluster to the list of populations.            
+            s = similar(samples, 0)
+            for i in cluster
+                push!(s, samples[i, 1:end])
+            end
+            push!(result, Population("Cluster", s))
+            # Remove elements of the first cluster from the list of indices.
+            idxs = setdiff(idxs, cluster)
+        end
+    end
+
+    return result
+end
+
+"""
+    _select(samples::DataFrame, distance, neighbors)
+
+Select those samples that have at least the given number of
+neighbors within the given distance.
+The distancematrix consists of sample indices and their distances
+to each other.
+
+Return an array sample indices that satisfy the given conditions.
+"""
+function _select(distancematrix, distance, neighbors)
+    result = Integer[]
+    (n, m ) = size(distancematrix)
+    for col = 1:m
+        hits = 0
+        for row = 1:n
+            if distancematrix[row, col] <= distance
+                hits += 1
+            end
+        end
+        if hits > neighbors
+            push!(result, col)
+        end
+    end
+    return result
+end
+
+"""
+    _cluster(index::Integer, indices::Integer[], distancematrix, distance)
+
+Return all indices that cluster with the index index.    
+"""
+function _cluster(index::Integer, indices::Array{Integer}, distancematrix, distance)
+    result = Integer[]
+    n = length(indices)
+    if n < 1
+        return result
+    end
+
+    # Find all elements that are close to index.
+    neighbors = Integer[]
+    nonneighbors = Integer[]
+    for i in indices
+        if distancematrix[index, i] <= distance
+            push!(neighbors, i)
+        else
+            push!(nonneighbors, i)
+        end
+    end
+    result = union(result, neighbors)
+
+    # Call _cluster to find all the elements that are close to the privious neighbors.
+    for i in neighbors
+        next_neighbors = _cluster(i, nonneighbors, distancematrix, distance)
+        result = union(result, neighbors)
+    end
+
+    return result
+end
 
 

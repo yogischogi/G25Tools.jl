@@ -1,15 +1,4 @@
 """
-    Population
-
-    Represents a population. Each population consists of a name,
-    for example "Viking", and a list of samples in G25 format.
-"""
-struct Population
-    name::String
-    samples::DataFrame
-end
-
-"""
     plotpca(samples::DataFrame)
 
 Plot all samples in a given DataFrame. The DataFrame must
