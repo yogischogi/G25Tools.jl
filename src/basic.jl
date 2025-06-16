@@ -1,5 +1,5 @@
 """
-    extractG25(from::AbstractDataFrame)
+    function extractG25(from::AbstractDataFrame; cols = String[])
 
 Extract G25 data from a DataFrame that is in the form
 of the main file of ancient samples.
@@ -8,12 +8,17 @@ https://www.exploreyourdna.com/ancient-samples.aspx
 
 Return a DataFrame in a simplified format that represents samples
 as Names and their G25 coordinates.
-"""
-function extractG25(from::AbstractDataFrame)
-    g25 = from.g25
-    date = from[!, "mean ad/bc"]
 
-    result = DataFrame(Name = String[] , PC1 = Float64[], PC2 = Float64[],
+The parameter cols can be used to add extra columns from the main file,
+for example it may be useful to add GPS coordinates. Just add the
+column titles as a String array like cols = ["Lat.", "Long."].
+"""
+function extractG25(from::AbstractDataFrame; cols = String[])
+    # Include only lines which contain G25 coordinates
+    source = subset(from, "g25" => ByRow(g25 -> !ismissing(g25)))
+
+    # Convert g25 column to DataFrame.
+    g25table = DataFrame(Name = String[] , PC1 = Float64[], PC2 = Float64[],
         PC3 = Float64[], PC4 = Float64[], PC5 = Float64[], PC6 = Float64[],
         PC7 = Float64[], PC8 = Float64[], PC9 = Float64[], PC10 = Float64[],
         PC11 = Float64[], PC12 = Float64[], PC13 = Float64[], PC14 = Float64[],
@@ -21,34 +26,38 @@ function extractG25(from::AbstractDataFrame)
         PC19 = Float64[], PC20 = Float64[], PC21 = Float64[], PC22 = Float64[],
         PC23 = Float64[], PC24 = Float64[], PC25 = Float64[]
     )
-
-    for (i, line) in enumerate(g25)
-        if !ismissing(line)
-            dstring = ""
-            if !ismissing(date[i])
-                d = round(Integer, date[i])
-                if d < 0
-                    d = -d
-                    dstring = "__BC_$(d)__"
-                else
-                    dstring = "__AD_$(d)__"
-                end
+    date = source[!, "mean ad/bc"]
+    for (i, line) in enumerate(source.g25)
+        datestring = ""
+        if !ismissing(date[i])
+            d = round(Integer, date[i])
+            if d < 0
+                d = -d
+                datestring = "__BC_$(d)__"
+            else
+                datestring = "__AD_$(d)__"
             end
-            csvrow = split(line, ",")
-            csvrow[1] *= dstring
-            row = []
-            push!(row, csvrow[1])
-            for i in 2:26
-                push!(row, parse(Float64, csvrow[i]))
-            end
-            push!(result, row)
         end
+        csvrow = split(line, ",")
+        csvrow[1] *= datestring
+        row = []
+        push!(row, csvrow[1])
+        for i in 2:26
+            push!(row, parse(Float64, csvrow[i]))
+        end
+        push!(g25table, row)
     end
-    return result
+
+    # Add extra columns.
+    for title in cols
+        g25table[!, title] = source[!, title]
+    end
+
+    return g25table
 end
 
 """
-    extractG25(from::AbstractString)
+    extractG25(filename::AbstractString; cols = String[])
 
 Extract G25 data from the main file of ancient samples.
 The main file can be found at:
@@ -56,14 +65,18 @@ https://www.exploreyourdna.com/ancient-samples.aspx
 
 Return a DataFrame in a simplified format that represents samples
 as Names and their G25 coordinates.
+
+The parameter cols can be used to add extra columns from the main file,
+for example it may be useful to add GPS coordinates. Just add the
+column titles as a String array.
 """
-function extractG25(from::AbstractString)
-    fulldata = DataFrame(CSV.File(from))
-    return extractG25(fulldata)
+function extractG25(filename::AbstractString; cols = String[])
+    fulldata = DataFrame(CSV.File(filename))
+    return extractG25(fulldata, cols)
 end
 
 """
-    extractG25(from::String, to::String)
+    extractG25(filename::AbstractString, to::AbstractString; cols = String[])
 
 Extract G25 data from the main file and save it locally to disk.
 The main file can be found at:
@@ -72,9 +85,13 @@ https://www.exploreyourdna.com/ancient-samples.aspx
 The G25 data is a simplified version of the main file which ir rather
 large to work with. Also some population data is only available in the
 simplified format.
+
+The parameter cols can be used to add extra columns from the main file,
+for example it may be useful to add GPS coordinates. Just add the
+column titles as a String array.
 """
-function extractG25(from::AbstractString, to::AbstractString)
-    data = extractG25(from)
+function extractG25(filename::AbstractString, to::AbstractString; cols = String[])
+    data = extractG25(filename, cols)
     CSV.write(to, data)
 end
 
@@ -92,7 +109,7 @@ function readG25(filename)
         "PC20", "PC21", "PC22", "PC23", "PC24", "PC25"
     ]
     samples = DataFrame(CSV.File(filename))
-    if names(samples) != colnames
+    if names(samples)[1:26] != colnames[1:26]
         error(
         """
         Invalid file format!
@@ -289,7 +306,7 @@ end
 """
     median(samples::DataFrame; name = "Median")
 
-Calculate the mean average of a DataFrame of samples in G25 format.
+Calculate the median average of a DataFrame of samples in G25 format.
 
 Return the median average as a vector of G25 coordinates where the first
 entry is the given name, usually the name of the given population.
