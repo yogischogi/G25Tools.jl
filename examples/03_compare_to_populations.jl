@@ -16,7 +16,7 @@ ancient_populations = similar(ancient_samples, 0)
 # according to country and take the average.
 countries = ["England", "Denmark", "Sweden", "Norway", "Germany", "Italy", "Spain"]
 for country in countries
-    country_samples = pick(ancient_samples, populations = [country])
+    country_samples = picksamples(ancient_samples, populations = [country])
     population = average(country_samples, name = country)
     push!(ancient_populations, population)
 end

@@ -133,25 +133,28 @@ function writedistances(directory, filename, sourcedistances::DataFrame)
 end
 
 """
-    pick(samples::DataFrame; populations::Array{String}=[], timeperiod=[-Inf, Inf])
+    function picksamples(samples::AbstractDataFrame; populations = String[], timeperiod = [-Inf, Inf])
 
-Pick a table of samples belonging to certain populations and a time persiod.
-Example: pick(samples, contains=["Germany", "England"], timeperiod=[0, 500])
+Pick a table of samples belonging to certain populations and/or a time persiod.
+Example: picksamples(samples, populations=["Germany", "England"], timeperiod=[0, 500])
 
 For more advanced filtering options use DataFrames' subset() or filter() methods.
 """
-function pick(samples::AbstractDataFrame; populations::Array{String}=[], timeperiod=[-Inf, Inf])
+function picksamples(samples::AbstractDataFrame; populations = String[], timeperiod = [-Inf, Inf])
     result = similar(samples, 0)
 
     # Check if sample belongs to one of the selected populations.
     for sample in eachrow(samples)
         ok = true
-        for p in populations
-            if occursin(p, sample.Name)
-                ok = true
-                break
+
+        if populations != []
+            for p in populations
+                if occursin(p, sample.Name)
+                    ok = true
+                    break
+                end
+                ok = false
             end
-            ok = false
         end
 
         # Check time period.

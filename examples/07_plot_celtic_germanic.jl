@@ -6,8 +6,8 @@ using G25
 ancient_samples = readG25("G25.txt")
 
 # Select populations from ancient samples.
-celtic = Population("Celtic", pick(ancient_samples, populations = ["Hallstatt", "LaTene"]))
-germanic = Population("Germanic", pick(ancient_samples, populations = ["Germanic"]))
+celtic = Population("Celtic", picksamples(ancient_samples, populations = ["Hallstatt", "LaTene"]))
+germanic = Population("Germanic", picksamples(ancient_samples, populations = ["Germanic"]))
 
 # Display PCA plot.
 f = plotpca([celtic, germanic])
