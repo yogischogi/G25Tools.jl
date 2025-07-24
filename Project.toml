@@ -1,12 +1,13 @@
 name = "G25Tools"
 uuid = "bf570a12-0cab-4ab4-8801-a920eb05267f"
 authors = ["Dirk Struve <yogischogi@gmail.com>"]
-version = "0.2.1"
+version = "0.3.1"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 CairoMakie = "13f3f980-e62b-5c42-98c6-ff1f3baf88f0"
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
+GeoMakie = "db073c08-6b98-4ee5-b6a4-5efafb3259c6"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 
@@ -14,5 +15,6 @@ Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
 CSV = "0.10.15"
 CairoMakie = "0.13.7"
 DataFrames = "1.7.0"
+GeoMakie = "0.7.13"
 LinearAlgebra = "1.11.0"
 Statistics = "1.11.1"

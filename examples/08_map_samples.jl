@@ -26,7 +26,11 @@ ga = GeoAxis(
     dest = "+proj=wintri", 
     limits = (-20, 40, 35, 70)
 )
+# Draw map.
+img = rotr90(GeoMakie.earth())
+image!(ga, -180..180, -90..90, img; interpolate = false) 
 lines!(ga, GeoMakie.coastlines())
+
 scatter!(ga, samples[!, "Long."], samples[!, "Lat."]; color = :red)
 fig
 

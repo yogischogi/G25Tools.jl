@@ -330,6 +330,82 @@ function medianavg(samples::DataFrame; name = "Median")
 end
 
 """
+    topmatches(sourcesamples, targetsamples;
+               sourcetimeperiod = [-Inf, Inf], targettimeperiod = [-Inf, Inf],
+               maxdistance = 0.1, targetfraction = 0.68)
+
+Find sourcesamples that had a big impact on the targetsamples.
+The intention is to find the target's most important ancestral
+population.
+
+The method looks for matches within the given G25 distance (maxdistance)
+to the target samples. It selects those matches that match the specified
+number of targetsamples (targetfraction) or more.
+"""
+function topmatches(sourcesamples, targetsamples;
+                    sourcetimeperiod = [-Inf, Inf], targettimeperiod = [-Inf, Inf],
+                    maxdistance = 0.1, targetfraction = 0.66)
+    # Filter sourcesamples for time period.
+    source = similar(sourcesamples, 0)
+    for s in eachrow(sourcesamples)
+        year = getyear(s.Name)
+        if year >= sourcetimeperiod[1] && year <= sourcetimeperiod[2]
+            push!(source, s)
+        end
+    end
+
+    # Filter targetsamples for time period.
+    target = similar(targetsamples, 0)
+    for s in eachrow(targetsamples)
+        year = getyear(s.Name)
+        if year >= targettimeperiod[1] && year <= targettimeperiod[2]
+            push!(target, s)
+        end
+    end
+
+    # Find all matches.
+    matches = distances(source, target)
+
+    # Consider only matches that are close to a member of the target population.
+    canditates = DataFrame(Name = String[], Distance = Float64[])
+    for m in matches
+        for s in eachrow(m.sourcesamples)
+            if s.Distance <= maxdistance
+                push!(canditates, s)
+            else
+                # We can break here because the samples are ordered by distance.
+                break
+            end
+        end
+    end
+
+    # Count the number of matches for each sourcesample.
+    matchcounts = Dict{String, Integer}()
+    for m in eachrow(canditates)
+        if haskey(matchcounts, m.Name)
+            matchcounts[m.Name] +=  1
+        else
+            matchcounts[m.Name] = 1
+        end
+    end
+
+    # Sort sample names according to highest count.
+    topmatches = DataFrame(Name = String[], Count = Integer[])
+    mincount = targetfraction * nrow(target)
+    for name in keys(matchcounts)
+        if matchcounts[name] >= mincount
+            push!(topmatches, (name, matchcounts[name]))
+        end
+    end
+    sort!(topmatches, :Count, rev = true)
+
+    # Add columns from the source table.
+    topmatches = leftjoin(topmatches, source, on = :Name, makeunique = true)
+    
+    return topmatches
+end
+
+"""
     clusters(samples::DataFrame; distance = 0.1, neighbors = 1)
 
 Find clusters in a set of samples that satisfy the given conditions.
