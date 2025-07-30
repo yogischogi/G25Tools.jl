@@ -1,6 +1,6 @@
 # Make a PCA plot of different populations.
 
-using G25
+using G25Tools
 
 # Load samples with G25 coordinates from file.
 ancient_samples = readG25("G25.txt")

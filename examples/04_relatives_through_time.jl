@@ -23,9 +23,12 @@ relatives_in_time = [similar(sourceG25, 0) for _ in 1:intervals]
 
 # Fill intervals with ancient samples.
 for sample in eachrow(sourceG25)
-    i = interval(getyear(sample.Name))
-    if i > 0 && i <= intervals
-        push!(relatives_in_time[i], sample)
+    year = getyear(sample.Name)
+    if !ismissing(year)
+        i = interval(year)
+        if i > 0 && i <= intervals
+            push!(relatives_in_time[i], sample)
+        end
     end
 end
 

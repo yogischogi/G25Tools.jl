@@ -32,7 +32,7 @@ ancient_samples = DataFrame(CSV.File("ancient_dna - main.csv"))
 samples = extractG25(ancient_samples,  cols = ["Lat.", "Long."])
 
 Yhaplo = L151
-Yhaplo_samples = subset(ancient_samples, "Y-DNA final" => ByRow(group -> !ismissing(group) ? occursin(Yhaplo, group) : false) )
+Yhaplo_samples = subset(ancient_samples, "Y-dna final" => ByRow(group -> !ismissing(group) ? occursin(Yhaplo, group) : false) )
 L151samples = extractG25(Yhaplo_samples, cols = ["Lat.", "Long."])
 
 # Define time periods.

@@ -13,7 +13,7 @@ ancient_samples = DataFrame(CSV.File("ancient_dna - main.csv"))
 
 # Select all samples belonging to a specific haplogroup.
 Yhaplo = P312
-Yhaplo_samples = subset(ancient_samples, "Y-DNA final" => ByRow(group -> !ismissing(group) ? occursin(Yhaplo, group) : false) )
+Yhaplo_samples = subset(ancient_samples, "Y-dna final" => ByRow(group -> !ismissing(group) ? occursin(Yhaplo, group) : false) )
 
 # Simplify the table so that it is easier to work with.
 # This is not needed but I want to demonstrate G25Tools here.

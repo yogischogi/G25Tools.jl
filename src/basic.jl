@@ -29,8 +29,12 @@ function extractG25(from::AbstractDataFrame; cols = String[])
     date = source[!, "mean ad/bc"]
     for (i, line) in enumerate(source.g25)
         datestring = ""
-        if !ismissing(date[i])
-            d = round(Integer, date[i])
+        if !ismissing(date[i]) && date[i] != "#N/A"
+            year = date[i]
+            if typeof(year) != Float64
+                year = parse(Float64, year)
+            end
+            d = round(Integer, year)
             if d < 0
                 d = -d
                 datestring = "__BC_$(d)__"
@@ -72,7 +76,7 @@ column titles as a String array.
 """
 function extractG25(filename::AbstractString; cols = String[])
     fulldata = DataFrame(CSV.File(filename))
-    return extractG25(fulldata, cols)
+    return extractG25(fulldata; cols)
 end
 
 """
@@ -91,7 +95,7 @@ for example it may be useful to add GPS coordinates. Just add the
 column titles as a String array.
 """
 function extractG25(filename::AbstractString, to::AbstractString; cols = String[])
-    data = extractG25(filename, cols)
+    data = extractG25(filename; cols)
     CSV.write(to, data)
 end
 
@@ -160,7 +164,7 @@ function picksamples(samples::AbstractDataFrame; populations = String[], timeper
         # Check time period.
         if ok == true
             year = getyear(sample.Name)
-            if isnothing(year) || year < timeperiod[1] || year > timeperiod[2]
+            if ismissing(year) || year < timeperiod[1] || year > timeperiod[2]
                 ok = false
             end
         end
@@ -179,7 +183,7 @@ Gets the year from a sample name in Davidskis format.
 Davidski encodes the year in the sample name with a pattern
 like __BC_50__ or __AD_450__.
 
-Returns the year or nothing if the year is not encoded.
+Returns the year or missing if the year is not encoded.
 """
 function getyear(samplename)
     # Look for year patterns.
@@ -187,7 +191,7 @@ function getyear(samplename)
     m = match(r, samplename)
 
     if isnothing(m)
-        return nothing
+        return missing
     end
     digits = m.match[6: end-2]
 
@@ -349,7 +353,7 @@ function topmatches(sourcesamples, targetsamples;
     source = similar(sourcesamples, 0)
     for s in eachrow(sourcesamples)
         year = getyear(s.Name)
-        if year >= sourcetimeperiod[1] && year <= sourcetimeperiod[2]
+        if !ismissing(year) && year >= sourcetimeperiod[1] && year <= sourcetimeperiod[2]
             push!(source, s)
         end
     end
@@ -358,7 +362,7 @@ function topmatches(sourcesamples, targetsamples;
     target = similar(targetsamples, 0)
     for s in eachrow(targetsamples)
         year = getyear(s.Name)
-        if year >= targettimeperiod[1] && year <= targettimeperiod[2]
+        if !ismissing(year) && year >= targettimeperiod[1] && year <= targettimeperiod[2]
             push!(target, s)
         end
     end
