@@ -29,17 +29,22 @@ function extractG25(from::AbstractDataFrame; cols = String[])
     date = source[!, "mean ad/bc"]
     for (i, line) in enumerate(source.g25)
         datestring = ""
-        if !ismissing(date[i]) && date[i] != "#N/A"
-            year = date[i]
-            if typeof(year) != Float64
-                year = parse(Float64, year)
-            end
-            d = round(Integer, year)
-            if d < 0
-                d = -d
-                datestring = "__BC_$(d)__"
-            else
-                datestring = "__AD_$(d)__"
+        if !ismissing(date[i])
+            try
+                year = date[i]
+                if typeof(year) != Float64
+                    year = parse(Float64, year)
+                end
+                d = round(Integer, year)
+                if d < 0
+                    d = -d
+                    datestring = "__BC_$(d)__"
+                else
+                    datestring = "__AD_$(d)__"
+                end
+            catch e
+                # Happens a lot when the date is #n/a or ? or ...
+                # println("Problem extracting date: $e")
             end
         end
         csvrow = split(line, ",")
