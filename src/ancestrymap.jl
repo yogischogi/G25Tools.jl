@@ -353,19 +353,25 @@ function combine_snps(snp_sets::Array{DataFrame})
     return result
 end
 
-
-function read_eigenstrat_snps(snpfile::AbstractString)
+"""
+Read Eigenstrat .snp file.
+"""
+function read_eigenstrat_snp(snpfile::AbstractString)
     local eigenstrat_snps::DataFrame
     if endswith(snpfile, ".bim")
-        eigenstrat_snps = CSV.read(snpfile, DataFrame; header = ["chromosome", "rsid", "cM", "position", "allele_1", "allele_2"])
+        eigenstrat_snps = CSV.read(snpfile, DataFrame; header = ["chromosome", "rsid", "cM", "position", "allele1", "allele2"])
     elseif endswith(snpfile, ".snp")
         eigenstrat_snps = CSV.read(snpfile, DataFrame;
-            header = ["rsid", "chromosome", "cM", "position", "allele_1", "allele_2"],
+            header = ["rsid", "chromosome", "cM", "position", "allele1", "allele2"],
             delim = ' ', ignorerepeated = true)
     else
         throw("read_eigenstrat: Wrong file format! File must end in .bim or .snp.")
     end
     return eigenstrat_snps
+end
+
+function write_eigenstrat_snp(filename::String, snps::DataFrame)
+    CSV.write(filename, snps; writeheader = false, delim = ' ')
 end
 
 """
@@ -472,6 +478,180 @@ function add_individual(eigenstrat_inds::DataFrame, genomatrix::Matrix{UInt8},
     return (result_inds, result_matrix)
 end
 
+"""
+    _encode(genotype::Tuple{Char, Char}, byte::UInt8, position::Int64,
+
+Encode the given genotype in a byte at the given bitpair position (0:3).
+Each SNP is characterized by a Tuple of two alleles. The Eigenstrat
+SNP contains the reference allele and the derived allele.
+"""
+function _encode(genotype::Tuple{Char, Char}, byte::UInt8, position::Int64,
+    eigenstrat_snp::Tuple{Char, Char})
+
+    # Calculate number of reference alleles.
+    n = 0x3 # 3 = no data/invalid
+    if (genotype[1] == eigenstrat_snp[1]) && (genotype[2] == eigenstrat_snp[1])
+        n = 0x2
+    elseif (genotype[1] == eigenstrat_snp[1]) || (genotype[2] == eigenstrat_snp[1])
+        n = 0x1
+    elseif (genotype[1] != eigenstrat_snp[1]) && (genotype[2] != eigenstrat_snp[1])
+        n = 0x0
+    end
+
+    # Check for triallelic markers.
+    if (genotype[1] != eigenstrat_snp[1]) && (genotype[2] != eigenstrat_snp[1]) &&
+       (genotype[1] != eigenstrat_snp[2]) && (genotype[2] != eigenstrat_snp[2])
+        n = 0x3
+    end
+
+    # Encode value in byte.
+    result = byte
+    if position == 0
+        result = byte | (n << 6)
+    elseif position == 1
+        result = byte | (n << 4)
+    elseif position == 2
+        result = byte | (n << 2)
+    elseif position == 3
+        result = byte | n
+    end
+    return result
+end
+
+"""
+    add_individual(inprefix::String, outprefix::String, ind_snp_file::String
+        id::String; gender = "U", status = "Control")
+
+Add an individual to a database in Eigenstrat format. This is usually some
+form of the AADR database. The SNPs in the database remain untouched. If
+the individual displayes SNPs that are not listed in the database or triallelic
+those SNPs are removed.
+
+This method is recommended if the AADR databse is too large to fit into memory.
+
+inprefix: Prefix of the input database.
+outprefix: Prefix of the output database.
+ind_snp_file: File containing SNP results for the individual. This should
+    work with files from Family Tree DNA Family Finder, MyHeritage, LivingDNA
+    and 23andMe.
+id: ID of the individual. For living persons I recommed the name.
+gender: U, F, M: Unknown, Female, Male
+status: Control, Case or a population label.
+"""
+function add_individual(inprefix::String, outprefix::String, ind_snp_file::String,
+    id::String; gender = "U", status = "Control")
+
+    indsuffix = ".ind"
+    snpsuffix = ".snp"
+    genosuffix = ".geno"
+    snps = read_eigenstrat_snp(inprefix * snpsuffix)
+    nsnp = nrow(snps)
+    inds = read_eigenstrat_ind(inprefix * indsuffix)
+    nind = nrow(inds)
+
+    # Write .ind file.
+    push!(inds, [id, gender, status])
+    write_eigenstrat_ind(outprefix * indsuffix, inds)
+    ind_hash = hash_ids(outprefix * indsuffix)
+
+    # .snp file remains untouched.
+    write_eigenstrat_snp(outprefix * snpsuffix, snps)
+    snp_hash = hash_ids(outprefix * snpsuffix)
+
+    # Geno file.
+    ind_snps = read_snp_file(ind_snp_file)
+    # Put individual's SNPs into a Dictionary.
+    ind_dict = Dict{String, String}()
+    for snp in eachrow(ind_snps)
+        ind_dict[snp.rsid] = snp.genotype
+    end
+
+    # 1 SNP value for 4 individuals is encoded as 1 byte.
+    bytes_per_line = Int64(ceil(nind / 4))
+    # Header size must be at least 48 bytes.
+    if bytes_per_line < 48
+        bytes_per_line = 48
+    end
+
+    # The output must contain enough space for 1 extra individual.
+    out_bytes_per_line = Int64(ceil((nind + 1) / 4))
+    # Adjust for minimum header size.
+    if out_bytes_per_line < bytes_per_line
+        out_bytes_per_line = bytes_per_line
+    end
+
+    # Read file line by line, add SNP for individual and write to outfile.
+    open(inprefix * genosuffix) do infile
+        open(outprefix * genosuffix, create = true, write = true) do outfile
+            inbuffer = Array{UInt8}(undef, bytes_per_line)
+            # Skip first line because it is a header.
+            read!(infile, inbuffer)
+            # Write new header.
+            ihash = string(ind_hash, base = 16)
+            shash = string(snp_hash, base = 16)
+            outbuf = zeros(UInt8, out_bytes_per_line)
+            cols = nind + 1
+            header = Array{UInt8}("GENO $cols $nsnp $ihash $shash")
+            outbuf[1: length(header)] = header
+            write(outfile, outbuf)
+            flush(outfile)
+            outbuf .= 0
+            
+            # Write SNPs.
+            for i = 1:nsnp
+                # Copy input row to output row.
+                read!(infile, inbuffer)
+                outbuf[1:bytes_per_line] = inbuffer
+
+                # Add individual's SNP value.
+                pos = Int64(ceil((nind + 1) / 4))
+                byte = outbuf[pos]
+                bitpair_no = nind % 4
+                rsid = snps.rsid[i]
+                if haskey(ind_dict, rsid)
+                    alleles = ind_dict[rsid]
+                    genotype = (alleles[1], alleles[2])
+                    reference = (snps.allele1[i][1], snps.allele2[i][1])
+                    byte = _encode(genotype, byte, bitpair_no, reference)
+                end
+                outbuf[pos]  = byte
+                # Write to file.
+                write(outfile, outbuf)
+                flush(outfile)
+                outbuf .= 0
+            end
+        end
+    end
+end
+
+
+function test_compare()
+    file1 = "temp.geno"
+    file2 = "temp2.geno"
+    file3 = "temp3.geno"
+
+    a = read(file1)
+    b = read(file2)
+    c = read(file3)
+
+    count = 0
+    for (i, _) in enumerate(a)
+        if a[i] != c[i]
+            as = string(a[i], base = 2)
+            bs = string(b[i], base = 2)
+            cs = string(c[i], base = 2)
+            println("Difference at position: $i, a = $as, c = $cs")
+            println(as)
+            println(bs)
+            println(cs)
+            println(a[i: i + 10])
+            println(c[i: i + 10])
+            println()
+            count += 1
+        end
+    end
+    println("Number of differences: $count")
+end
 
 
 function test_read_geno()
@@ -524,40 +704,48 @@ end
 """
 A test example.
 """
-function example_reduce_database()
-    individuals = readlines("../NPRdata.ind")
+function test_reduce_database()
+    individuals = readlines("temp2.ind")
     nind = length(individuals)
     println("Number of individuals: $nind")
 
-    snps = readlines("../NPRdata.snp")
+    snps = readlines("temp2.snp")
     nsnp = length(snps)
     println("Number of SNPs: $nsnp")
 
     # Choose individuals
-    indies = collect(1:20:nind)
+    indies = collect(1:35)
     println("Choosing $indies individuals.")
-    geno = read_packedancestrymap("../NPRdata.geno", nsnp, nind, indies)
+    geno = read_packedancestrymap("temp2.geno", nsnp, nind, indies)
 
     # Write selected individuals to new data base.
-    open("temp.snp", create = true, write = true) do file
+    open("temp3.snp", create = true, write = true) do file
         for line in snps
             write(file, line)
             write(file, "\n")
         end
     end
 
-    open("temp.ind", create = true, write = true) do file
+    open("temp3.ind", create = true, write = true) do file
         for i in indies
             write(file, individuals[i])
             write(file, "\n")
         end
     end
 
-    ihash = hash_ids("temp.ind")
-    shash = hash_ids("temp.snp")
+    ihash = hash_ids("temp3.ind")
+    shash = hash_ids("temp3.snp")
 
-    write_packedancestrymap("temp.geno", geno; ind_hash = ihash, snp_hash = shash)
+    write_packedancestrymap("temp3.geno", geno; ind_hash = ihash, snp_hash = shash)
 end
+
+function test_expand_reduce()
+    # Add an individual to database temp and save it as temp2.
+    add_individual("temp", "temp2", "dirk-autosomal.txt", "Dirk"; gender="M")
+    # Remove individual and save it as temp3.
+    test_reduce_database()
+end
+
 
 # Working with full AADR database.
 function example_2()
