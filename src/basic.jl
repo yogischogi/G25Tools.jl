@@ -80,8 +80,47 @@ for example it may be useful to add GPS coordinates. Just add the
 column titles as a String array.
 """
 function extractG25(filename::AbstractString; cols = String[])
-    fulldata = DataFrame(CSV.File(filename))
-    return extractG25(fulldata; cols)
+    rawdata = DataFrame(CSV.File(filename))
+
+    # Make sure that Lat. and Long. columns are of type Float.
+    nrows = nrow(rawdata)
+    lat = Union{Float64, Missing}[missing for i = 1:nrows]
+    long = Union{Float64, Missing}[missing for i = 1:nrows]
+
+    rawlat = rawdata[!, "Lat."]
+    for (i, entry) in enumerate(rawlat)
+        if !ismissing(entry)
+            try
+                if typeof(entry) != Float64
+                    new_entry = parse(Float64, entry)
+                end
+                lat[i] = new_entry
+            catch e
+                # Do nothing. We keep the missing entry in lat.
+            end
+        end
+    end
+
+    rawlong = rawdata[!, "Long."]
+    for (i, entry) in enumerate(rawlong)
+        if !ismissing(entry)
+            try
+                if typeof(entry) != Float64
+                    new_entry = parse(Float64, entry)
+                end
+                long[i] = new_entry
+            catch e
+                # Do nothing. We keep the missing entry in long.
+            end
+        end
+    end
+
+    # Replace old Lat and Long columns with the processed ones.
+    samples = select!(rawdata, Not("Lat.", "Long."))
+    samples[!, "Lat."] = lat
+    samples[!, "Long."] = long
+   
+    return extractG25(samples; cols)
 end
 
 """
