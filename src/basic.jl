@@ -1,4 +1,52 @@
 """
+    _fix_lat_long(rawdata::AbstractDataFrame)
+
+Make sure that the Lat and Long columns in the loaded data contain
+only Float64 or missing entries.
+
+The original CSV file with ancient samples sometimes contains multiple
+GPS entries for a single? (fused samples?) sample. This results in invalid
+entries when the file is loaded by the CSV package.
+"""
+function _fix_lat_long(rawdata::AbstractDataFrame)
+    nrows = nrow(rawdata)
+    lat = Union{Float64, Missing}[missing for i = 1:nrows]
+    long = Union{Float64, Missing}[missing for i = 1:nrows]
+
+    for (i, entry) in enumerate(rawdata[!, "Lat."])
+        if !ismissing(entry)
+            try
+                if typeof(entry) != Float64
+                    new_entry = parse(Float64, entry)
+                end
+                lat[i] = new_entry
+            catch e
+                # Do nothing. We keep the missing entry in lat.
+            end
+        end
+    end
+
+    for (i, entry) in enumerate(rawdata[!, "Long."])
+        if !ismissing(entry)
+            try
+                if typeof(entry) != Float64
+                    new_entry = parse(Float64, entry)
+                end
+                long[i] = new_entry
+            catch e
+                # Do nothing. We keep the missing entry in long.
+            end
+        end
+    end
+
+    # Replace old Lat and Long columns with the processed ones.
+    samples = select!(rawdata, Not("Lat.", "Long."))
+    samples[!, "Lat."] = lat
+    samples[!, "Long."] = long
+    return samples
+end
+
+"""
     function extractG25(from::AbstractDataFrame; cols = String[])
 
 Extract G25 data from a DataFrame that is in the form
@@ -14,6 +62,8 @@ for example it may be useful to add GPS coordinates. Just add the
 column titles as a String array like cols = ["Lat.", "Long."].
 """
 function extractG25(from::AbstractDataFrame; cols = String[])
+    from = _fix_lat_long(from)
+
     # Include only lines which contain G25 coordinates
     source = subset(from, "g25" => ByRow(g25 -> !ismissing(g25)))
 
@@ -81,45 +131,7 @@ column titles as a String array.
 """
 function extractG25(filename::AbstractString; cols = String[])
     rawdata = DataFrame(CSV.File(filename))
-
-    # Make sure that Lat. and Long. columns are of type Float.
-    nrows = nrow(rawdata)
-    lat = Union{Float64, Missing}[missing for i = 1:nrows]
-    long = Union{Float64, Missing}[missing for i = 1:nrows]
-
-    rawlat = rawdata[!, "Lat."]
-    for (i, entry) in enumerate(rawlat)
-        if !ismissing(entry)
-            try
-                if typeof(entry) != Float64
-                    new_entry = parse(Float64, entry)
-                end
-                lat[i] = new_entry
-            catch e
-                # Do nothing. We keep the missing entry in lat.
-            end
-        end
-    end
-
-    rawlong = rawdata[!, "Long."]
-    for (i, entry) in enumerate(rawlong)
-        if !ismissing(entry)
-            try
-                if typeof(entry) != Float64
-                    new_entry = parse(Float64, entry)
-                end
-                long[i] = new_entry
-            catch e
-                # Do nothing. We keep the missing entry in long.
-            end
-        end
-    end
-
-    # Replace old Lat and Long columns with the processed ones.
-    samples = select!(rawdata, Not("Lat.", "Long."))
-    samples[!, "Lat."] = lat
-    samples[!, "Long."] = long
-   
+    samples = _fix_lat_long(rawdata)
     return extractG25(samples; cols)
 end
 
