@@ -18,6 +18,8 @@ function _fix_lat_long(rawdata::AbstractDataFrame)
             try
                 if typeof(entry) != Float64
                     new_entry = parse(Float64, entry)
+                else
+                    new_entry = entry
                 end
                 lat[i] = new_entry
             catch e
@@ -31,6 +33,8 @@ function _fix_lat_long(rawdata::AbstractDataFrame)
             try
                 if typeof(entry) != Float64
                     new_entry = parse(Float64, entry)
+                else
+                    new_entry = entry
                 end
                 long[i] = new_entry
             catch e
@@ -181,7 +185,7 @@ function readG25(filename)
 end
 
 """
-    write(directory, filename, distances)
+    writedistances(directory, filename, distances)
 
 Write a DataFrame in G25 format to a specific directory.
 This is a convenience function that is most useful when
