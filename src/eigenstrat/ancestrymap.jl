@@ -498,7 +498,7 @@ function _encode(genotype::Tuple{Char, Char}, byte::UInt8, position::Int64,
         n = 0x0
     end
 
-    # Check for triallelic markers.
+    # Check for invalid and triallelic markers.
     if (genotype[1] != eigenstrat_snp[1]) && (genotype[2] != eigenstrat_snp[1]) &&
        (genotype[1] != eigenstrat_snp[2]) && (genotype[2] != eigenstrat_snp[2])
         n = 0x3
@@ -559,6 +559,8 @@ function add_individual(inprefix::String, outprefix::String, ind_snp_file::Strin
     snp_hash = hash_ids(outprefix * snpsuffix)
 
     # Geno file.
+
+    # Put individual's SNPs into dictionary.
     ind_snps = read_snp_file(ind_snp_file)
     # Put individual's SNPs into a Dictionary.
     ind_dict = Dict{String, String}()
@@ -608,10 +610,14 @@ function add_individual(inprefix::String, outprefix::String, ind_snp_file::Strin
                 byte = outbuf[pos]
                 bitpair_no = nind % 4
                 rsid = snps.rsid[i]
+                reference = (snps.allele1[i][1], snps.allele2[i][1])
                 if haskey(ind_dict, rsid)
                     alleles = ind_dict[rsid]
                     genotype = (alleles[1], alleles[2])
-                    reference = (snps.allele1[i][1], snps.allele2[i][1])
+                    byte = _encode(genotype, byte, bitpair_no, reference)
+                else
+                    # missing genotype
+                    genotype = ('-', '-')
                     byte = _encode(genotype, byte, bitpair_no, reference)
                 end
                 outbuf[pos]  = byte
