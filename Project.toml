@@ -1,7 +1,7 @@
 name = "G25Tools"
 uuid = "bf570a12-0cab-4ab4-8801-a920eb05267f"
 authors = ["Dirk Struve <yogischogi@gmail.com>"]
-version = "0.5.7"
+version = "0.6.7"
 
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"

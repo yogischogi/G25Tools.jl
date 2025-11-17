@@ -5,7 +5,8 @@
 # The format is used for the AADR database.
 # https://dataverse.harvard.edu/dataverse/reich_lab 
 
-using CSV, DataFrames, DelimitedFiles
+using CSV, DataFrames, DelimitedFiles, MultivariateStats, Statistics
+using CairoMakie
 
 """
     _hashit(sequence::String)
@@ -630,5 +631,80 @@ function add_individual(inprefix::String, outprefix::String, ind_snp_file::Strin
     end
 end
 
+"""
+    pca_smartsnp(genomatrix::Matrix)
 
+Perform PCA analysis like the R package smartsnp.
+https://github.com/ChristianHuber/smartsnp
+https://besjournals.onlinelibrary.wiley.com/doi/full/10.1111/2041-210X.13684
+
+Currently this method scales by genetic drift like recommended by Patterson.
+https://journals.plos.org/plosgenetics/article?id=10.1371/journal.pgen.0020190
+
+XXX There seeems to be some confusion whether the matrix contains the
+number of ancestral or derived markers.
+"""
+function pca_smartsnp(genomatrix::Matrix)
+    nrow, ncol = size(genomatrix)
+    adjusted = Matrix{Float64}(undef, nrow, ncol)
+    missing_value = 3
+
+    # Convert number of ancestral alleles to number of derived alleles.
+    # We assume that all SNPs are biallelic.
+    for i in 1:nrow
+        # Compute mean for existing values.
+        m = mean(filter(x -> x != missing_value, genomatrix[i, :]))
+        for j in 1:ncol
+            if genomatrix[i, j] != missing_value
+                adjusted[i, j] = genomatrix[i, j]
+            else
+                # Replace missing values with mean value.
+                adjusted[i, j] = m
+            end
+        end
+    end
+
+    # Remove invariant markers.
+    count = 0
+    for i in 1:nrow
+        first = adjusted[i, 1]    
+        for j in 1:ncol
+            if adjusted[i, j] != first
+                count += 1
+                adjusted[count, :] = adjusted[i, :]
+                break
+            end
+        end
+    end
+
+    adjusted = adjusted[1:count, :]
+    nrow, ncol = size(adjusted)
+
+    # Mean number of derived alleles and standard deviations.
+    m = zeros(Float64, nrow)
+    s = zeros(Float64, nrow)
+    for i in 1:nrow
+        m[i] = mean(adjusted[i, :])
+        #s[i] = std(adjusted[i, :])
+    end
+
+    # Standardize: Center and scale (Z score).
+#=    for i in 1:nrow
+        adjusted[i, :] = (adjusted[i, :] .- m[i]) / s[i]
+    end
+=#
+    # Alternative: Center and adjust for genetic drift.
+    p = m ./ 2  # Allele frequemcy (see Patterson 2006).
+    for i in 1:nrow
+        adjusted[i, :] = (adjusted[i, :] .- m[i]) / sqrt( p[i] * (1 - p[i]) )
+    end
+
+    # Use MultivariateStats.jl for PCA.
+    M = fit(PCA, adjusted; maxoutdim = 25)
+    # Calculate 25 PCA components for each sample.
+    coordinates = predict(M, adjusted)
+    result = coordinates'
+
+    scatter(result[:, 1], result[:, 2])
+end
 
