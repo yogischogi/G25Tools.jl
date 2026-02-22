@@ -2,14 +2,10 @@
 
 using G25Tools
 
-# Convert main file of ancient samples into simplified Davidski format.
-# The main file can be found at:
-# https://www.exploreyourdna.com/ancient-samples.aspx
-ancient_samples = extractG25("ancient_dna - main.csv", "G25.txt")
-
 # Adjust file names to your needs.
 # You need to create a targetfiles with a list of samples in G25 format.
-# See the file G25.txt as an example.
+# See the file G25.txt as an example. This is the G25 file we created
+# in example 01.
 sourcefile = "G25.txt"
 targetfile = "targetsamples.txt"
 resultsdirectory = "temp"

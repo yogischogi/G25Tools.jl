@@ -13,15 +13,81 @@ to compare genetic samples and populations.
 
 ## First steps
 
-1. Download the [main file of ancient samples](https://www.exploreyourdna.com/ancient-samples.aspx)
-   from ExploreYourDNA.
+### Download ancient DNA data
+
+1. Download the
+   [spreadsheet of ancient samples](https://docs.google.com/spreadsheets/d/1EJZTb34IwUNudSQ50uqvBPKDNsL9DDC90lpN586LcTY/)
+   in CSV format.
+   As far as I know the samples were assembled by the user `nomad` from the
+   [GenArchivist](https://www.genarchivist.net/) forum.
+
+   Alternatively you can download some
+   [sample sets from Davidski](https://eurogenes.blogspot.com/2019/07/getting-most-out-of-global25_12.html).
+   However these collections are not up-to-date.
+
 2. I also highly recommend to get your G25 coordinates from
    [G25 Requests](https://g25requests.app/). 
    If you already know your K36 coordinates you can also begin
    with simulated G25 coordinates from
    [ExploreYourDNA](https://www.exploreyourdna.com/simulated-g25.aspx).
    Note that this step is not necessary to get the examples running.
-3. Start working with the [examples](https://github.com/yogischogi/G25Tools.jl/tree/main/examples).
+
+## Explore the [examples](https://github.com/yogischogi/G25Tools.jl/tree/main/examples)
+
+[01_compare_single.jl](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/01_compare_single.jl)
+
+Compares your G25 coordinates to a list of ancient samples.
+
+
+[02_compare_multi.jl](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/02_compare_multi.jl)
+
+Compares a list of target samples to a list of ancient DNA source samples.
+
+
+[03_compare_to_populations.jl](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/03_compare_to_populations.jl)
+
+Compares a single sample to a list of selected populations.
+
+
+[04_relatives_through_time.jl](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/04_relatives_through_time.jl)
+
+Finds your closest ancient relatives for different time periods.
+
+
+[05_filter_haplogroups.jl](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/05_filter_haplogroups.jl)
+
+Find your closest ancient relatives who belong to certain haplogroups.
+
+
+[06_plot_PCA.jl](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/06_plot_PCA.jl)
+
+Create a simple PCA plot that compares your sample to populations from different countries.
+
+
+[07_plot_celtic_germanic.jl](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/07_plot_celtic_germanic.jl)
+
+Another simple PCA plot that shows Celtic and Germanic populations.
+
+
+[08_map_samples.jl](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/08_map_samples.jl)
+
+Displays ancient samples on a map.
+
+
+[09_ancestral_population.jl](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/09_ancestral_population.jl)
+
+Find ancient samples within a specified time frame that are genetically close
+to a set of target samples and show them on a map.
+
+
+[10_migration_animation.jl](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/10_migration_animation.jl)
+
+Create an animation that shows R1b migrations.
+
+
+[11_relatives_animation.jl](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/11_relatives_animation.jl)
+
+Create an animation of your historical relatives depending on genetic distance.
 
 
 ## Functions

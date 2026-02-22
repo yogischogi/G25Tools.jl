@@ -9,11 +9,11 @@ const P312 = "R1b1a1b1a1a2"
 const S1194 = "R1b1a1b1a1a3"
 
 # Load main file because it contains the detailed information we need.
-ancient_samples = DataFrame(CSV.File("ancient_dna - main.csv"))
+ancient_samples = DataFrame(CSV.File("ancient_dna - Sheet1.csv"))
 
 # Select all samples belonging to a specific haplogroup.
 Yhaplo = P312
-Yhaplo_samples = subset(ancient_samples, "Y-dna final" => ByRow(group -> !ismissing(group) ? occursin(Yhaplo, group) : false) )
+Yhaplo_samples = subset(ancient_samples, "Isogg final" => ByRow(group -> !ismissing(group) ? occursin(Yhaplo, group) : false) )
 
 # Simplify the table so that it is easier to work with.
 # This is not needed but I want to demonstrate G25Tools here.

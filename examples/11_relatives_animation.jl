@@ -32,7 +32,7 @@ myG25 = ["Ragnar",0.13332656233600002,0.13488497177199998,0.0690654488256,0.0555
 
 # Main file for ancient DNA samples downloaded from exploreyourdna.com.
 # Filename changes sometimes.
-const ancient_dna_file = "ancient_dna - main.csv"
+const ancient_dna_file = "ancient_dna - Sheet1.csv"
 ancient_samples = DataFrame(CSV.File(ancient_dna_file))
 
 # Simplify table of samples.
@@ -51,7 +51,7 @@ ga = GeoAxis(
     #limits = (-20, 40, 35, 70), # Europe
     limits = (-20, 120, 20, 70), # Europe and Asia
     #limits = (-180, 179, -60, 80), # Earth
-    subtitle = "Data downloaded from exploreyourdna.com"
+    subtitle = "Data provided by nomad"
 )
 
 # Add earth map.

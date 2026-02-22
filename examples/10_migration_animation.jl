@@ -16,12 +16,12 @@ const NeoFarmers = "G2"
 
 # Main file for ancient DNA samples downloaded from exploreyourdna.com.
 # Filename changes sometimes.
-const ancient_dna_file = "ancient_dna - main.csv"
+const ancient_dna_file = "ancient_dna - Sheet1.csv"
 ancient_samples = DataFrame(CSV.File(ancient_dna_file))
 
 # Filter samples for haplogroup.
 Yhaplo = R1b
-Yhaplo_samples = subset(ancient_samples, "Y-dna final" => ByRow(group -> !ismissing(group) ? occursin(Yhaplo, group) : false) )
+Yhaplo_samples = subset(ancient_samples, "Isogg final" => ByRow(group -> !ismissing(group) ? occursin(Yhaplo, group) : false) )
 R1bsamples = extractG25(Yhaplo_samples, cols = ["Lat.", "Long."])
 
 # Create a figure that should be animated.
@@ -31,7 +31,7 @@ ga = GeoAxis(
     dest = "+proj=wintri", # the CRS in which you want to plot
     limits = (-20, 40, 35, 70), # Europe
     #limits = (-20, 120, 20, 70), # Europe and Asia
-    subtitle = "Data downloaded from exploreyourdna.com"
+    subtitle = "Data provided by nomad"
 )
 
 # Add earth map.

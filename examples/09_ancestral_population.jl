@@ -28,11 +28,11 @@ function plotsamples(samples)
 end
 
 # Get samples in simplified G25 format.
-ancient_samples = DataFrame(CSV.File("ancient_dna - main.csv"))
+ancient_samples = DataFrame(CSV.File("ancient_dna - Sheet1.csv"))
 samples = extractG25(ancient_samples,  cols = ["Lat.", "Long."])
 
 Yhaplo = L151
-Yhaplo_samples = subset(ancient_samples, "Y-dna final" => ByRow(group -> !ismissing(group) ? occursin(Yhaplo, group) : false) )
+Yhaplo_samples = subset(ancient_samples, "Isogg final" => ByRow(group -> !ismissing(group) ? occursin(Yhaplo, group) : false) )
 L151samples = extractG25(Yhaplo_samples, cols = ["Lat.", "Long."])
 
 # Define time periods.

@@ -10,12 +10,12 @@ Yhaplo = "R1b1a1b1a1a3"
 mtDNAhaplo = "H1c1"
 
 # Load main file because it contains the detailed information we need.
-ancient_samples = DataFrame(CSV.File("ancient_dna - main.csv"))
+ancient_samples = DataFrame(CSV.File("ancient_dna - Sheet1.csv"))
 
 # Take a subset of all samples that fit the Yhaplo group.
-# The paternal haplogroups are listed in column "Y-dna final" 
+# The paternal haplogroups are listed in column "Isogg final" 
 # The maternal ones are in "mtdna final"
-Yhaplo_samples = subset(ancient_samples, "Y-dna final" => ByRow(group -> !ismissing(group) ? occursin(Yhaplo, group) : false) )
+Yhaplo_samples = subset(ancient_samples, "Isogg final" => ByRow(group -> !ismissing(group) ? occursin(Yhaplo, group) : false) )
 
 # Extract G25 coordinates and convert the DataFrame of samples into a simpler format.
 g25_Yhaplo = extractG25(Yhaplo_samples)
@@ -26,7 +26,7 @@ println(first(Y_distances, 10))
 
 
 # The same for our maternal haplogroup.
-mtDNA_samples = subset(ancient_samples, "mtdna final" => ByRow(group -> !ismissing(group) ? occursin(mtDNAhaplo, group) : false) )
+mtDNA_samples = subset(ancient_samples, "mtdnafinal" => ByRow(group -> !ismissing(group) ? occursin(mtDNAhaplo, group) : false) )
 g25_mtDNA = extractG25(mtDNA_samples)
 mtDNA_distances = distances(g25_mtDNA, myG25)
 println(first(mtDNA_distances, 10))
