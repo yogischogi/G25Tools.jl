@@ -26,9 +26,9 @@ You can install G25Tools from the Julia interpreter.
 
 ```julia
 julia> ]
-pkg> add add https://github.com/yogischogi/G25Tools.jl
+pkg> add https://github.com/yogischogi/G25Tools.jl
 pkg> Press BACKSPACE
-julia> using EigenstratFormat
+julia> using G25Tools
 ```
 
 ## Documentation
