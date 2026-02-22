@@ -34,11 +34,10 @@ to compare genetic samples and populations.
 
 ## Explore the [examples](https://github.com/yogischogi/G25Tools.jl/tree/main/examples)
 
-1. [`compare_single.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/01_compare_single.jl):
+1. [`compare_single.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/01_compare_single.jl)\
    Compares your G25 coordinates to a list of ancient samples.
 
-
-2. [`compare_multi.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/02_compare_multi.jl):
+2. [`compare_multi.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/02_compare_multi.jl)\
    Compares a list of target samples to a list of ancient DNA source samples.
 
 3. [`compare_to_populations.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/03_compare_to_populations.jl):
