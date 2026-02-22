@@ -1,4 +1,4 @@
-# G25Tools
+# G25Tools.jl
 
 G25Tools is a library for the [Julia](https://julialang.org/)
 programming language to work with G25 coordinates.
@@ -13,35 +13,27 @@ For users there are several online calculators available at
 [ExploreYourDNA](https://www.exploreyourdna.com/calculators.aspx)
 but compared to a programming language their use is rather restricted.
 
-G25Tools is a library that gives you more freedom to play
-around with DNA results and allows for more in-depth exploration.
-You can:
+G25Tools gives you more freedom to play around with DNA results
+and allows for more in-depth exploration. You can:
 
 1. Compare genetic samples and populations.
 2. Filter existing samples to create new populations.
 3. Generate simple PCA plots (PCA = Principal Component Analysis).
 
-## Getting started
-
 ### Installation
 
-1. Install [Julia](https://julialang.org/downloads/) on
-   your computer.
-2. At the Julia prompt type `]` to switch to the package
-   manager. Type `add https://github.com/yogischogi/G25Tools.jl`
-   to install the package.
+You can install G25Tools from the Julia interpreter.
 
-### First steps
+```julia
+julia> ]
+pkg> add add https://github.com/yogischogi/G25Tools.jl
+pkg> Press BACKSPACE
+julia> using EigenstratFormat
+```
 
-1. Download the [main file of ancient samples](https://www.exploreyourdna.com/ancient-samples.aspx)
-   from ExploreYourDNA.
-2. I also highly recommend to get your G25 coordinates from
-   [G25 Requests](https://g25requests.app/). 
-   If you already know your K36 coordinates you can also begin
-   with simulated G25 coordinates from
-   [ExploreYourDNA](https://www.exploreyourdna.com/simulated-g25.aspx).
-   Note that this step is not necessary to get the examples running.
-3. Start working with the [examples](https://github.com/yogischogi/G25Tools.jl/tree/main/examples).
+## Documentation
+
+- [Current developer version](https://yogischogi.github.io/G25Tools.jl/dev/)
 
 
 
