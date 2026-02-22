@@ -40,32 +40,32 @@ to compare genetic samples and populations.
 2. [`compare_multi.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/02_compare_multi.jl)\
    Compares a list of target samples to a list of ancient DNA source samples.
 
-3. [`compare_to_populations.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/03_compare_to_populations.jl):
+3. [`compare_to_populations.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/03_compare_to_populations.jl)\
    Compares a single sample to a list of selected populations.
 
-4. [`relatives_through_time.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/04_relatives_through_time.jl):
+4. [`relatives_through_time.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/04_relatives_through_time.jl)\
    Finds your closest ancient relatives for different time periods.
 
-5. [`filter_haplogroups.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/05_filter_haplogroups.jl):
+5. [`filter_haplogroups.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/05_filter_haplogroups.jl)\
    Find your closest ancient relatives who belong to certain haplogroups.
 
-6. [`plot_PCA.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/06_plot_PCA.jl):
+6. [`plot_PCA.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/06_plot_PCA.jl)\
    Create a simple PCA plot that compares your sample to populations from different countries.
 
-7. [`plot_celtic_germanic.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/07_plot_celtic_germanic.jl):
+7. [`plot_celtic_germanic.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/07_plot_celtic_germanic.jl)\
    Another simple PCA plot that shows Celtic and Germanic populations.
 
-8. [`map_samples.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/08_map_samples.jl):
+8. [`map_samples.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/08_map_samples.jl)\
    Displays ancient samples on a map.
 
-9. [`ancestral_population.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/09_ancestral_population.jl):
+9. [`ancestral_population.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/09_ancestral_population.jl)\
    Find ancient samples within a specified time frame that are genetically close
    to a set of target samples and show them on a map.
 
-10. [`migration_animation.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/10_migration_animation.jl):
+10. [`migration_animation.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/10_migration_animation.jl)\
     Create an animation that shows R1b migrations.
 
-11. [`relatives_animation.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/11_relatives_animation.jl):
+11. [`relatives_animation.jl`](https://github.com/yogischogi/G25Tools.jl/blob/main/examples/11_relatives_animation.jl)\
     Create an animation of your historical relatives depending on genetic distance.
 
 
